@@ -39,7 +39,7 @@ def train(model, dataset) -> str:
         decay_rate=float(os.getenv("decay_rate"))
     )
     optimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
-    model.compile(optimizer=Adam(0.002),
+    model.compile(optimizer=Adam(float(os.getenv("initial_learning_rate"))),
                   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
                   # loss='categorical_crossentropy',
                   metrics=['accuracy'])
