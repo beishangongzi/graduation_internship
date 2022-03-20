@@ -1,7 +1,9 @@
 import os
 
 import keras
+from dotenv import load_dotenv
 from keras import layers
+from keras.applications.mobilenet import MobileNet
 from keras.applications.resnet import ResNet101
 from keras.layers import Conv2D, Flatten, Dense, Rescaling, MaxPooling2D, Dropout
 from keras.models import Sequential
@@ -108,9 +110,26 @@ class Resnet101(BaseModel):
         base_model.trainable = False if os.getenv("transfer_learning_trainable") == "False" else True
         inputs = keras.Input(shape=(int(os.getenv("img_height")), int(os.getenv("img_width")), 3))
         x = self.data_augmentation(inputs)
-        x = Rescaling(1./255)(x)
+        x = Rescaling(1. / 255)(x)
         x = base_model(x, training=False if os.getenv("transfer_learning_trainable") == "False" else True)
         x = keras.layers.GlobalAvgPool2D()(x)
         out_puts = keras.layers.Dense(int(os.getenv("num_class")))(x)
         model = keras.Model(inputs, out_puts, name=self.name)
         return model
+
+
+class MyMobileNet(BaseModel):
+    def __init__(self):
+        super(MyMobileNet, self).__init__()
+
+    def __call__(self, *args, **kwargs):
+        self.model.add(self.data_augmentation)
+        self.model.add(Rescaling(1.0 / 255))
+        self.model.add(MobileNet(input_shape=(200, 200, 3), weights=None, classes=7))
+        self.model.summary()
+        return self.model
+
+
+if __name__ == '__main__':
+    load_dotenv()
+    v = MyMobileNet()()

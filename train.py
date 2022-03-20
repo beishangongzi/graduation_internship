@@ -3,6 +3,7 @@ import os
 
 import dotenv
 import tensorflow as tf
+from keras.optimizer_v2.adam import Adam
 
 
 def train(model, dataset) -> str:
@@ -38,8 +39,9 @@ def train(model, dataset) -> str:
         decay_rate=float(os.getenv("decay_rate"))
     )
     optimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
-    model.compile(optimizer='adam',
+    model.compile(optimizer=Adam(0.002),
                   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+                  # loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
     checkpoint_path = os.path.join(os.getenv("model_dir"), model.name, f"{os.getenv('epochs')}-{os.getenv('batch_size')}-{os.getenv('initial_learning_rate')}-{os.getenv('decay_steps')}-{os.getenv('decay_rate')}-cp_best.ckpt")
