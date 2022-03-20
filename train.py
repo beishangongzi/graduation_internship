@@ -33,15 +33,16 @@ def train(model, dataset) -> str:
     model = model(train_ds)
     print(model.name)
     lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
-	initial_learning_rate=1e-2,
-	decay_steps=10000,
-	decay_rate=0.9)
-    optimizer = tf.keras.optimizers.SGD(learning_rate=lr_schedule)
-    model.compile(optimizer='adam',
+        initial_learning_rate=float(os.getenv("initial_learning_rate")),
+        decay_steps=int(os.getenv("decay_steps")),
+        decay_rate=float(os.getenv("decay_rate"))
+    )
+    optimizer = tf.keras.optimizers.Adam(learning_rate=lr_schedule)
+    model.compile(optimizer=optimizer,
                   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
                   metrics=['accuracy'])
 
-    checkpoint_path = os.path.join(os.getenv("model_dir"), model.name, "cp_best.ckpt")
+    checkpoint_path = os.path.join(os.getenv("model_dir"), model.name, f"{os.getenv('epochs')}-{os.getenv('batch_size')}-{os.getenv('initial_learning_rate')}-{os.getenv('decay_steps')}-{os.getenv('decay_rate')}-cp_best.ckpt")
     save_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=checkpoint_path,
         verbose=1,
@@ -59,7 +60,7 @@ def train(model, dataset) -> str:
         epochs=int(os.getenv("epochs")),
         callbacks=[save_callback, tensorboard_callback]
     )
-    export_path = os.path.join(os.getenv("model_dir"), model.name, "best")
+    export_path = os.path.join(os.getenv("model_dir"), model.name, f"{os.getenv('epochs')}-{os.getenv('batch_size')}-{os.getenv('initial_learning_rate')}-{os.getenv('decay_steps')}-{os.getenv('decay_rate')}-best")
     model.save(export_path)
     print(export_path)
     return export_path
@@ -70,8 +71,10 @@ def main(args):
     dataset = FLAGS.dataset
     train(model, dataset)
 
+
 if __name__ == '__main__':
     from my_models import *
+
     dotenv.load_dotenv()
     FLAGS = tf.compat.v1.flags.FLAGS
     tf.compat.v1.flags.DEFINE_string("model", os.getenv("model"), "model that used")
