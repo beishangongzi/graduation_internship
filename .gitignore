@@ -9,7 +9,8 @@ image_of_model/
 model_ckpt
 *.tar
 model_dir
-
+*.csv
+*.txt
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
